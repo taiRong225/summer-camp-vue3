@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css"
+        integrity="sha384-SZXxX4whJ79/gErwcOYf+zWLeJdY/qpuqC4cAa9rOGUstPomtqpuNWT9wdPEn2fk" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="container header">
+            <h1 class="logo"><a href="#"><img src="images/camp.svg" alt="camp-logo"></a>{{ title }}</h1>
+            <ul class="menu">
+                <li><a href="#" class="active"><i class="fas fa-list"></i></a></li>
+            </ul>
+        </div>
+        <div class="container main">
+            <ul>
+                <li v-for="member in members">
+                    <a href="#" class="card">
+                        <div class="card-img">
+                            <img :src="member.picture.large" alt="avator">
+                        </div>
+                        <div class="card-body">
+                            <div class="card-body-top">
+                                <h2>{{ member.name.title }} {{ member.name.first }} {{ member.name.last }}</h2>
+                                <i class="fas fa-mars" v-if="member.gender === 'male'"></i>
+                                <i class="fas fa-venus" v-if="member.gender === 'female'"></i>
+                            </div>
+                            <div class="card-body-content">
+                                <ul>
+                                    <li><i class="fas fa-envelope"></i>{{ member.email }}</li>
+                                    <li><i class="fas fa-phone"></i>{{ member.phone }}</li>
+                                    <li><i class="fas fa-mobile-alt"></i>{{ member.cell}}</li>
+                                    <li><i class="fas fa-city"></i>{{ member.location.city }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </a>
+                </li>
+            </ul>
+            <button type="button" class="more-btn" @click="more()">more</button>
+        </div>
+        <div class="continer footer">
+            &copy; 2021 Create By TaiRong
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@next"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script>
+
+        Vue.createApp({
+            data() {
+                return {
+                    title: 'Hexschool-Summer-Camp-Vue3-Week1',
+                    members: [],
+                    page: 1,
+                    perPage: 3,
+                    isEnd: true
+                }
+            },
+            methods: {
+                // 請求資料
+                getData() {
+                    const url = `https://randomuser.me/api/?page=${this.page}&results=${this.perPage}&seed=abc`;
+                    axios.get(url)
+                        .then(res => {
+                            const results = res.data.results;
+                            results.forEach(item => this.members.push(item));
+                        });
+                },
+                // 加載更多
+                more() {
+                    this.page++;
+                    this.getData();
+                }
+            },
+            mounted() {
+                this.getData();
+            },
+            created() {
+                document.title = this.title;
+            }
+        }).mount('#app');
+
+    </script>
+
+</body>
+
+</html>
