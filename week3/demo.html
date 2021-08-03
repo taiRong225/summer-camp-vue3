@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css"
+        integrity="sha384-SZXxX4whJ79/gErwcOYf+zWLeJdY/qpuqC4cAa9rOGUstPomtqpuNWT9wdPEn2fk" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+    <div id="app">
+        <div class="container header">
+            <h1 class="logo"><a href="#"><img src="images/camp.svg" alt="camp-logo"></a>Summer-Camp-Vue3</h1>
+        </div>
+        <div class="container main">
+            <div class="h1">TODO LIST</div>
+            <div class="input-group">
+                <input type="text" class="todo" placeholder="新增待辦事項" v-model.trim="todo" @keyup.enter="addTodo" v-focus>
+                <button type="button" class="btn" @click="addTodo()"><i class="fas fa-plus"></i></button>
+            </div>
+            <div class="content">
+                <ul class="tab">
+                    <li><a href="#" :class="{ active: visibility === 'all'}" @click.prevent="visibility = 'all'">全部</a>
+                    </li>
+                    <li><a href="#" :class="{ active: visibility === 'active'}"
+                            @click.prevent="visibility = 'active'">待完成</a></li>
+                    <li><a href="#" :class="{ active: visibility === 'completed'}"
+                            @click.prevent="visibility = 'completed'">已完成</a></li>
+                </ul>
+                <ul class="todoList">
+                    <li class="item" v-for="item in filterTodos" :key="item.id">
+                        <div class="input" v-if="temp.id === item.id">
+                            <input type="text" class="edit" v-model="temp.todo">
+                        </div>
+                        <div class="checkbox" v-else>
+                            <input type="checkbox" :id="item.id" @change="item.isCompleted = !item.isCompleted"
+                                :checked="item.isCompleted" class="mr-1">
+                            <label :for="item.id">{{ item.todo }}</label>
+                        </div>
+                        <div class="btn-group">
+                            <button type="button" class="btn mr-1" v-if="temp.id === item.id" @click="doneEdit(item)"><i
+                                    class="fas fa-check"></i></button>
+                            <button type="button" class="btn mr-1" v-else @click="editTodo(item)"><i
+                                    class="fas fa-edit"></i></button>
+                            <button type="button" class="btn mr-1" @click="deleteTodo(item.id)"><i
+                                    class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </li>
+                </ul>
+                <div class="footer">
+                    <p class="total">有 {{ todos.length }} 個待辦事項</p>
+                    <input type="button" class="clear" value="清除全部待辦" @click="clear">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@next"></script>
+    <script>
+
+        const LS = {
+            load() {
+                return JSON.parse(localStorage.getItem('todos') || '[]')
+            },
+            save(data) {
+                localStorage.setItem('todos', JSON.stringify(data))
+            },
+            clear() {
+                localStorage.clear();
+            }
+        }
+
+        Vue.createApp({
+            data() {
+                return {
+                    title: 'Hexschool-Summer-Camp-Vue3-Week3',
+                    todos: [],
+                    todo: '',
+                    visibility: 'all',
+                    temp: ''
+                }
+            },
+            methods: {
+                // 新增待辦
+                addTodo() {
+                    // 檢查資料
+                    if (!this.todo) return;
+
+                    // 新待辦事項
+                    const newTodo = {
+                        id: this.todos.length + 1,
+                        todo: this.todo,
+                        isCompleted: false
+                    }
+
+                    // 加入到陣列中
+                    this.todos.push(newTodo);
+
+                    // 清空input value
+                    this.todo = "";
+
+                    // save localStorage
+                    LS.save(this.todos);
+                },
+                // 編輯待辦
+                editTodo(item) {
+
+                    // 更新暫存變數
+                    this.temp = { ...item };
+                },
+                // 完成編輯
+                doneEdit(item) {
+                    // 檢查資料
+                    if (!this.temp.todo) return;
+
+                    // 更新待辦事項
+                    item.todo = this.temp.todo;
+
+                    // 清空暫存變數
+                    this.temp = '';
+
+                    // save localStorage
+                    LS.save(this.todos);
+                },
+                // 刪除待辦
+                deleteTodo(id) {
+
+                    // 找到要刪出的資料當前在陣列中的索引
+                    const findIndex = this.todos.findIndex(item => item.id === id);
+
+                    // 從陣列中刪除
+                    this.todos.splice(findIndex, 1);
+
+                    // save localStorage
+                    LS.save(this.todos);
+                },
+                // 清除全部
+                clear() {
+                    this.todos = [];
+
+                    // clear localStorage
+                    LS.clear();
+                },
+                // 初始化
+                init() {
+                    this.todos = LS.load();
+                }
+            },
+            computed: {
+                // 過濾待辦清單
+                filterTodos() {
+                    switch (this.visibility) {
+                        case 'active':
+                            return this.todos.filter(item => !item.isCompleted);
+                            break;
+                        case 'completed':
+                            return this.todos.filter(item => item.isCompleted);
+                        default:
+                            return this.todos;
+                    }
+                }
+            },
+            mounted() {
+                this.init();
+            },
+            created() {
+                document.title = this.title;
+            },
+            // 註冊一個局部指令 v-focus (這個指令只能在該實例中使用)
+            // 該指令的功能是在頁面加載時，元素獲得焦點
+            directives: {
+                focus: {
+                    mounted(el) {
+                        el.focus()
+                    }
+                }
+            }
+        }).mount('#app');
+
+    </script>
+
+</body>
+
+</html>
