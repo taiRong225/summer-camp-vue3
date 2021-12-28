@@ -1,4 +1,7 @@
 # Week3 待辦清單 (Options API)
+
+![image](https://user-images.githubusercontent.com/27886174/147538883-6867451d-eb0d-4287-a91f-9ebe272f29ce.png)
+
 ## 學習要點
 1. 鍵盤修飾符 - `@keyup.enter="event"`
 2. 修飾掉首尾的空白 `v-model.trim`
